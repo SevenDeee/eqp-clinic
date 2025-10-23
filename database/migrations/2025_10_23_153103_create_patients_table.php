@@ -20,12 +20,12 @@ return new class extends Migration
             $table->string('age');
             $table->string('sex');
 
-            $table->string('frame_type')->default('N/A');
-            $table->string('color')->default('N/A');
-            $table->string('lens_supply')->default('N/A');
-            $table->string('diagnosis')->default('N/A');
+            $table->string('frame_type')->nullable();
+            $table->string('color')->nullable();
+            $table->string('lens_supply')->nullable();
+            $table->string('diagnosis')->nullable();
 
-            $table->string('special_instructions')->default('N/A');
+            $table->string('special_instructions')->nullable();
             $table->timestamp('follow_up_on')->nullable();
 
             $table->decimal('amount', 10, 2)->nullable();

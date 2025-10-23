@@ -19,10 +19,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        User::factory()->create([
+            'name' => 'Van Mercadal',
+            'email' => 'van@gmail.com',
+            'password' => 'van',
+        ]);
 
         Patient::factory(10)->create()->each(function ($patient) {
             Prescription::factory()
