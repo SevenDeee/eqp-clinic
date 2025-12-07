@@ -19,7 +19,7 @@ return new class extends Migration
             $table->json('far')->nullable();
             $table->json('near')->nullable();
 
-            $table->string('remarks')->default('N/A');
+            $table->string('remarks')->nullable();
             $table->foreignId('prescribed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });

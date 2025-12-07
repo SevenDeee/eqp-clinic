@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+
 class PatientResource extends Resource
 {
     protected static ?string $model = Patient::class;
@@ -50,7 +51,27 @@ class PatientResource extends Resource
             'index' => ListPatients::route('/'),
             'create' => CreatePatient::route('/create'),
             'view' => ViewPatient::route('/{record}'),
-            'edit' => EditPatient::route('/{record}/edit'),
+            // 'edit' => EditPatient::route('/{record}/edit'),
         ];
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount('prescriptions'); // Load prescription count
+    }
+
+
+
+    // public static function resolveRecordRouteBinding($value)
+    // {
+    //     return static::getEloquentQuery()
+    //         ->with([
+    //             'creator',                    // For "Created By Dr."
+    //             'prescriptions.prescriber'    // For prescription details
+    //         ])
+    //         ->withCount('prescriptions')      // For the section visibility check
+    //         ->where(static::getRecordRouteKeyName(), $value)
+    //         ->firstOrFail();
+    // }
 }

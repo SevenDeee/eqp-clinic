@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Prescription - Karli Ziemann DDS</title>
+    <title>Patient Info - {{ $patient->name }}</title>
     <style>
         body {
-            background: #fde8e8;
+            background: #ffffff;
             font-family: Arial, Helvetica, sans-serif;
             color: #21262e;
             margin: -20;
@@ -140,7 +140,7 @@
 
         footer {
             border-top: 1px solid #050505;
-            margin-top: 180px;
+            margin-top: 100px;
             font-size: 0.9em;
             color: #4a5568;
             text-align: center;
@@ -164,8 +164,10 @@
             </div>
         </header>
 
-        <section>
-            <h2>Patient Information</h2>
+        <section
+         style="margin-bottom: 0.5em;"
+        >
+            <h2>Patient Details</h2>
             <div class="columns">
                 <div class="col">
                     <p><span class="font-semibold">Name:</span> {{ $patient->name }}</p>
@@ -225,24 +227,43 @@
             </table>
         </section>
 
-        <section>
-            <h2>Additional Information</h2>
+        <section
+        {{-- style="margin-bottom: 8em;" --}}
+        >
+            <h2>Optical Specifications & Billing Information</h2>
             <div class="columns">
                 <div class="col">
                     <p><span class="font-semibold">Frame Type:</span> {{ $patient->frame_type }}</p>
                     <p><span class="font-semibold">Color:</span> {{ $patient->color }}</p>
-                    <p><span class="font-semibold">Special Instructions:</span> {{ $patient->special_instructions }}
-                    </p>
                     <p><span class="font-semibold">Lens Supply:</span>
                         {{ $patient->lens_suplly ? $patient->lens_suplly : 'N/A' }}</p>
-                    <p><span class="font-semibold">Diagnosis:</span> {{ $patient->diagnosis }}</p>
+                    <p><span class="font-semibold">Lens Coatings:</span>
+                        {{ $patient->lens_suplly ? $patient->lens_suplly : 'N/A' }}</p>
                 </div>
                 <div class="col">
                     <p><span class="font-semibold">Amount:</span> P{{ number_format($patient->amount) }}</p>
                     <p><span class="font-semibold">Deposit:</span> P{{ number_format($patient->deposit) }}</p>
                     <p><span class="font-semibold">Balance:</span> P{{ number_format($patient->balance) }}</p>
+                    <p><span class="font-semibold"></span> .</p>
                 </div>
             </div>
+        </section>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+        <section 
+        style="margin-bottom: -5em;"
+        >
+            <h2>Clinical Assesment</h2>
+            <p><span class="font-semibold">Special Instructions:</span> {{ $patient->special_instructions }}
+            </p>
+            <p><span class="font-semibold">Diagnosis:</span> {{ $patient->diagnosis }}</p>
+            <p><span class="font-semibold">Added Date:</span> {{ $patient->created_at->format('F d, Y') }}</p>
+            <p><span class="font-semibold">Added By:</span> Dr. {{ $patient->creator->name }}</p>
+
         </section>
 
         <footer>
@@ -251,7 +272,7 @@
         </footer>
         <br>
         <br>
-        <p class="italic text-gray-500" style="padding-left: 10; padding-bottom: 10; text-align: right; font-size: 10">
+        <p class="italic text-gray-500" style="padding-left: 10; padding-bottom: 10; text-align: right; font-size: 10; margin-bottom: -5em;">
             Issued At: {{ now()->format('F d, Y') }}</p>
     </div>
 </body>

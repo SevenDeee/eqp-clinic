@@ -23,6 +23,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'Van Mercadal',
             'email' => 'van@gmail.com',
             'password' => 'van',
+            'role' => 'admin',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Alvin Constantino',
+            'email' => 'alvin@gmail.com',
+            'password' => 'alvin',
+            'role' => 'user',
         ]);
 
         Patient::factory(10)->create()->each(function ($patient) {

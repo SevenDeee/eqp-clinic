@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Patients\Schemas;
 
 use App\Filament\Resources\Patients\PatientResource;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\ColorEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
@@ -12,6 +13,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\TextSize;
+use Illuminate\Support\Carbon;
 
 class PatientInfolist
 {
@@ -21,58 +23,116 @@ class PatientInfolist
             ->columns(4)
             ->components([
 
-                Section::make()
+                Group::make()
                     ->columnSpan(3)
-                    ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
+                        Section::make()
+                            ->description('Patient Details')
+                            ->columns(2)
+                            ->schema([
+                                self::patient('name', 'Name'),
+                                self::patient('contact_number', 'Contact Number'),
+                                self::patient('age', 'Age'),
+                                self::patient('sex', 'Sex'),
+                                TextEntry::make('address')
+                                    ->extraAttributes([
+                                        'class' => 'block w-full rounded-lg border border-gray-300 bg-white px-3 py-1 text-lg text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100',
+                                    ])
+                                    ->columnSpanFull()
+                            ]),
+                        Section::make()
+                            ->compact()
+                            ->description('Clinical Assessment')
+                            ->afterHeader(function ($record) {
 
-                        self::infoEntry('name', 'Name'),
-                        self::infoEntry('address', 'Address'),
-                        self::infoEntry('contact_number', 'Contact Number'),
-                        self::infoEntry('age', 'Age'),
-                        self::infoEntry('sex', 'Sex'),
-                        self::infoEntry('diagnosis', 'Diagnosis'),
-                        self::infoEntry('special_instructions', 'Special Instructions'),
-                        self::infoEntry('follow_up_on', 'Follow up on')->date(),
-                        self::infoEntry('creator.name', 'Created By')->prefix('Dr. '),
-                        self::infoEntry('created_at', 'created_at')->date(),
+                                $follow_up_on = $record->follow_up_on !== null
+                                    ? \Carbon\Carbon::make($record->follow_up_on)->endOfDay()
+                                    : null;
+
+                                if (
+                                    $record->follow_up_on === null
+                                    || $follow_up_on < Carbon::now()->startOfDay()
+                                ) {
+                                    $date = 'Not scheduled';
+                                    $bgClass = 'bg-gray-100 dark:bg-gray-800/50 shadow-sm ring-1 ring-gray-900/5 dark:shadow-lg dark:ring-gray-100/10';
+                                    $textClass = 'text-gray-600 dark:text-gray-400';
+                                    $iconColor = 'text-gray-400 dark:text-gray-500';
+                                } else {
+                                    $date = \Carbon\Carbon::parse($record->follow_up_on)->format('F d, Y');
+                                    $bgClass = 'bg-blue-50 dark:bg-blue-900/20 shadow-sm ring-1 ring-blue-900/5 dark:shadow-lg dark:ring-blue-100/10';
+                                    $textClass = 'text-blue-700 dark:text-blue-300';
+                                    $iconColor = 'text-blue-500 dark:text-blue-400';
+                                }
+
+                                return new \Illuminate\Support\HtmlString(
+                                    '<div class="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg mb-3 ' . $bgClass . ' ' . $textClass . '">
+            <svg class="w-4 h-4 ' . $iconColor . '" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            <span class="font-medium">Follow up On : </span>
+            <span class="font-semibold">' . $date . '</span>
+        </div>'
+                                );
+                            })
+                            ->columns(2)
+                            ->schema([
+
+                                TextEntry::make('diagnosis')
+                                    ->placeholder('N/A')
+                                    ->extraAttributes([
+                                        'class' => 'block w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-lg text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100',
+                                    ]),
+                                TextEntry::make('special_instructions')
+                                    ->placeholder('N/A')
+                                    ->extraAttributes([
+                                        'class' => 'block w-full min-h-[80px] rounded-lg border border-gray-300 bg-white px-3 py-2 text-lg text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100',
+                                    ]),
+                                self::patient('creator.name', 'Added By', 'sm')->prefix('Dr. '),
+                                self::patient('created_at', 'Date Added', 'sm')->date(),
+                            ]),
+
+                        Section::make('Medical History')
+                            ->compact()
+                            ->description(fn() => 'Prescription/s Total: ' . session('prescriptions_count'))
+                            // Use the eager-loaded count instead of querying
+                            ->schema([
+                                View::make('components.prescription')
+                                    ->visible(fn() => (session('prescriptions_count')) !== 0),
+                            ]),
                     ]),
-
 
                 Group::make()
                     ->inlineLabel()
                     ->columnSpan(1)
                     ->schema([
-
                         Section::make()
+                            ->description('Optical Specifications')
                             ->schema([
                                 self::textEntry('frame_type', 'Frame Type'),
                                 ColorEntry::make('color')->beforeContent(fn($record) => $record->color)
                                     ->beforeLabel('Color')
+                                    ->placeholder('N/A')
                                     ->hiddenLabel(),
                                 self::textEntry('lens_supply', 'Lens Supply'),
                             ]),
 
                         Section::make()
+                            ->description('Billing Information')
                             ->schema([
                                 self::textEntry('amount', 'Amount')->money('php')->color('info'),
                                 self::textEntry('deposit', 'Deposit')->money('php')->color('success'),
                                 self::textEntry('balance', 'Balance')->money('php')->color('danger'),
 
                                 Actions::make([
-                                    Action::make('Back')
+                                    Action::make('Return')
                                         ->extraAttributes(['class' => 'w-full'])
                                         ->url(PatientResource::getUrl('index')),
                                 ])
                             ])
                     ]),
 
-                Section::make('Prescriptions')
-                    ->columnSpan(3)
-                    ->schema([
-                        View::make('components.prescription'),
 
-                    ]),
             ]);
     }
 
@@ -84,12 +144,15 @@ class PatientInfolist
             ->hiddenLabel()
             ->placeholder('N/A');
     }
-    public static function infoEntry($column, $label)
+
+    public static function patient($column, $label, $size = 'lg')
     {
         return TextEntry::make($column)
-            ->size(TextSize::Large)
-            ->hiddenLabel()
-            ->aboveContent($label)
-            ->placeholder('N/A');
+            ->inlineLabel()
+            ->label($label . ' : ')
+            ->placeholder('N/A')
+            ->extraAttributes([
+                'class' => 'block w-full rounded-lg border border-gray-300 bg-white px-3 py-1 text-' . $size . ' text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100',
+            ]);
     }
 }

@@ -14,15 +14,16 @@ class ListPatients extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->createAnother(false),
         ];
     }
 
     public function getTabs(): array
     {
         return [
-            'Active' => Tab::make()->query(fn($query) => $query->whereNull('archived_at')),
-            'Archived' => Tab::make()->query(fn($query) => $query->whereNotNull('archived_at')),
+            'Active' => Tab::make()->query(fn($query) => $query->whereNull('archived_at')->whereNull('deleted_at')),
+            'Archived' => Tab::make()->query(fn($query) => $query->whereNotNull('archived_at')->whereNull('deleted_at')),
         ];
     }
 }
