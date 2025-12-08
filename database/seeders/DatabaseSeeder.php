@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Patient;
 use App\Models\Prescription;
 use App\Models\User;
@@ -37,8 +38,18 @@ class DatabaseSeeder extends Seeder
             Prescription::factory()
                 ->for($patient)
                 ->create([
-                    'prescribed_by' => 1,
+                    'prescribed_by' => rand(1, 2),
                 ]);
         });
+
+        Category::factory()->create([
+            'name' => 'Frame Type',
+        ]);
+        Category::factory()->create([
+            'name' => 'Frame Color',
+        ]);
+        Category::factory()->create([
+            'name' => 'Lens Supply',
+        ]);
     }
 }

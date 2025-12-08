@@ -19,17 +19,17 @@ return new class extends Migration {
             $table->string('age');
             $table->string('sex');
 
-            $table->string('frame_type')->nullable();
-            $table->string('color')->nullable();
-            $table->string('lens_supply')->nullable();
+            // $table->string('frame_type')->nullable();
+            // $table->string('color')->nullable();
+            // $table->string('lens_supply')->nullable();
             $table->string('diagnosis')->nullable();
 
             $table->string('special_instructions')->nullable();
             $table->timestamp('follow_up_on')->nullable();
 
-            $table->decimal('amount', 10, 2)->nullable();
-            $table->decimal('deposit', 10, 2)->nullable();
-            $table->decimal('balance', 10, 2)->nullable();
+            // $table->decimal('amount', 10, 2)->nullable();
+            // $table->decimal('deposit', 10, 2)->nullable();
+            // $table->decimal('balance', 10, 2)->nullable();
 
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('archived_at')->nullable();

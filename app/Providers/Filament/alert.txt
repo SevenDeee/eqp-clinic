@@ -1,0 +1,191 @@
+use App\Filament\Resources\Inventories\Pages\ListInventories;
+use App\Filament\Resources\Patients\Pages\ListPatients;
+use App\Models\Inventory;
+use App\Models\Patient;
+use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Facades\Filament;
+use Filament\Panel;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\EmbeddedSchema;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
+use Filament\Support\Facades\FilamentIcon;
+use Filament\Support\Icons\Heroicon;
+use Filament\View\PanelsIconAlias;
+use Filament\Widgets\Widget;
+use Filament\Widgets\WidgetConfiguration;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\HtmlString;    
+    
+    public $defaultAction = null;
+    public $data = [];
+
+    public function mount(): void
+    {
+
+        $this->data['defaultAction'] = session()->get('defaultAction', 'welcomeModal');
+        $this->defaultAction = $this->data['defaultAction'];
+
+
+        $this->data['currentStep'] = session()->get('dashboard_modal_step', 1);
+        $this->data['followUp'] = Patient::whereDate('follow_up_on', now())->get();
+        $this->data['inventoryStock'] = Inventory::where('stock', '<=', 5)->get();
+        $this->data['stock_singular'] = $this->data['inventoryStock']->count() == 1;
+        $this->data['followUp_singular'] = $this->data['followUp']->count() == 1;
+
+        if ($this->data['currentStep'] === 1) {
+            session()->put('defaultAction', 'welcomeModal');
+            $this->defaultAction = 'welcomeModal';
+            return;
+        }
+        if ($this->data['followUp']->count() > 0 && $this->defaultAction != 'lowStockAlert' && $this->defaultAction != 'noAlert') {
+            session()->put('defaultAction', 'followUpAlert');
+            $this->defaultAction = 'followUpAlert';
+            return;
+        }
+        if ($this->data['inventoryStock']->count() > 0) {
+            session()->put('defaultAction', 'lowStockAlert');
+            $this->defaultAction = 'lowStockAlert';
+            return;
+        }
+        if ($this->data['inventoryStock']->count() == 0 && $this->data['followUp']->count() == 0) {
+            session()->put('defaultAction', 'noAlert');
+            $this->defaultAction = 'noAlert';
+            return;
+        }
+    }
+
+    public function welcomeModalAction(): Action
+    {
+        return Action::make('welcomeModal')
+            ->modalContent(
+                fn() => new HtmlString('
+        <h2 class="text-4xl font-bold">Welcome Dr. ' . auth()->user()->name . '!</h2>
+        <p class="text-4xl text-gray-400">' . ($this->data['inventoryStock']->count() == 0 && $this->data['followUp']->count() == 0 ? 'You are all set for now, Enjoy your day!' : 'Here’s an overview of what’s coming up.') . '</p>
+    ')
+            )
+            ->modalHeading('')
+            ->modalWidth(Width::Large)
+            ->modalCloseButton(false)
+            ->closeModalByClickingAway(false)
+            ->closeModalByEscaping(false)
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
+            ->extraModalFooterActions(fn() => [
+                match (true) {
+                    $this->data['followUp']->count() > 0 => $this->followUpAlertAction(),
+                    $this->data['inventoryStock']->count() > 0 => $this->lowStockAlertAction(),
+                    default => $this->noAlertAction(),
+                }
+            ]);
+    }
+
+    public function followUpAlertAction(): Action
+    {
+        return Action::make('followUpAlert')
+            ->label('See what\'s coming up.')
+            ->extraAttributes([
+                'class' => 'w-full',
+            ])
+            ->modalContent(
+                function () {
+                    $html = '<h2 class="text-4xl font-bold">List of Follow Up Schedule for Today</h2>
+                                <p class="text-4xl text-gray-400">There\'s ' . $this->data['followUp']->count() . ' Patient/s that has follow up scheduled today.</p>';
+
+                    $html .= '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 max-h-64 overflow-y-auto">';
+                    $html .= '<ul class="space-y-1 m-0 pl-4 text-center">';
+
+                    foreach ($this->data['followUp'] as $followUp) {
+                        $name = e($followUp->name);
+                        $sex = e($followUp->sex);
+                        $contact = e($followUp->contact_number);
+                        $html .= <<<HTML
+
+<li class="text-md text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0 pb-1 pt-1">
+    <div class="flex justify-between items-center">
+        <span>{$name}</span>
+        <span class="text-md italic text-gray-500 dark:text-gray-400">
+            {$sex}
+        </span>
+        <span class="text-md italic text-gray-500 dark:text-gray-400 mr-2">
+            0{$contact}
+        </span>
+    </div>
+</li>
+HTML;
+                    }
+
+                    $html .= '</ul></div>';
+
+                    return new HtmlString($html);
+                }
+            )
+            ->modalHeading('')
+            ->modalWidth(Width::Large)
+            ->closeModalByClickingAway(false)
+            ->closeModalByEscaping(false)
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
+            ->extraModalFooterActions(fn() => [
+                match (true) {
+                    $this->data['inventoryStock']->count() > 0 => $this->lowStockAlertAction(),
+                    default => $this->noAlertAction(),
+                }
+            ])
+            ->color('gray');
+    }
+    public function lowStockAlertAction(): Action
+    {
+        return Action::make('lowStockAlert')
+            ->label(($this->defaultAction == 'followUpAlert' ? 'See what\'s coming up.' : 'Got it.'))
+            ->extraAttributes([
+                'class' => 'w-full',
+            ])
+            ->modalHeading('Inventory Low Stock Alert!')
+            ->modalDescription('Our system detected that there ' . ($this->data['stock_singular'] ? 'is ' : 'are ') . $this->data['inventoryStock']->count() . ($this->data['stock_singular'] ? ' item ' : ' items ') . ' in your inventory that ' . ($this->data['stock_singular'] ? 'is' : 'are') . ' nearly out of stock! Take action to avoid shortages.')
+            ->modalCloseButton(false)
+            ->modalWidth(Width::Large)
+            ->closeModalByClickingAway(fn() => $this->defaultAction == 'lowStockAlert')
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
+            ->modalIconColor('danger')
+            ->closeModalByEscaping(fn() => $this->defaultAction == 'lowStockAlert')
+            ->requiresConfirmation()
+            ->extraModalFooterActions([
+                Action::make('lowStockAlert')
+                    ->label('Restock Now')
+                    ->icon('heroicon-o-shopping-cart')
+                    ->button()
+                    ->extraAttributes([
+                        'class' => 'w-full',
+                    ])
+                    ->modalWidth(Width::Large)
+                    ->action(function () {
+                        // dd($this->defaultAction, $this->data['currentStep']);
+                        session()->put('dashboard_modal_step', 3);
+                        session()->put('defaultAction', 'lowStockAlert');
+                        $this->defaultAction = 'lowStockAlert';
+                        redirect(ListInventories::getUrl());
+                    })
+                    ->cancelParentActions()
+                    ->color('success')
+            ])
+            ->color('gray');
+    }
+
+    public function noAlertAction(): Action
+    {
+        return Action::make('noAlert')
+            ->label('Close')
+            ->extraAttributes([
+                'class' => 'w-full',
+            ])
+            ->action(function () {
+                session()->put('dashboard_modal_step', 4);
+                session()->put('defaultAction', 'noAlert');
+                $this->defaultAction = 'noAlert';
+            })->cancelParentActions()
+            ->color('gray');
+    }

@@ -40,7 +40,7 @@ class PrescriptionFactory extends Factory
             'far' => $jsonTemplate,
             'near' => $jsonTemplate,
             'remarks' => $this->faker->randomElement(['N/A', 'Follow up needed', 'Adjust prescription']),
-            'prescribed_by' => 1, // same user ID
+            'prescribed_by' => $this->faker->randomElement([1, 2]),
         ];
     }
 }

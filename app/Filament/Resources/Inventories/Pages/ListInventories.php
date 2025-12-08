@@ -114,77 +114,73 @@ HTML;
                 })
             // ->label('New Item')
             ,
-            ActionGroup::make([
-                CreateAction::make()
-                    ->modalHeading('Create Item')
-                    ->modalWidth(Width::FourExtraLarge)
-                    ->createAnother(false)
-                    ->icon(Heroicon::Plus)
-                    ->label('New Item'),
-                Action::make('New Category')
-                    ->icon(Heroicon::Plus)
-                    ->form([
+            // ActionGroup::make([
+            CreateAction::make()
+                ->modalHeading('Create Item')
+                ->modalWidth(Width::FourExtraLarge)
+                ->createAnother(false)
+                ->icon(Heroicon::Plus)
+                ->label('New Item'),
+            //                 Action::make('New Category')
+//                     ->icon(Heroicon::Plus)
+//                     ->form([
 
-                        Grid::make()->columns(2)
-                            ->schema([
+            //                         Grid::make()->columns(2)
+//                             ->schema([
 
-                                Section::make()
-                                    ->schema([
-                                        TextInput::make('category_name')
-                                            ->unique(Category::class, 'name')
-                                            ->required(),
-                                    ]),
-                                Section::make('Existing Categories')
-                                    ->schema([
-                                        Placeholder::make('category_list')
-                                            ->content(function () {
-                                                $categories = Category::pluck('name');
+            //                                 Section::make()
+//                                     ->schema([
+//                                         TextInput::make('category_name')
+//                                             ->unique(Category::class, 'name')
+//                                             ->required(),
+//                                     ]),
+//                                 Section::make('Existing Categories')
+//                                     ->schema([
+//                                         Placeholder::make('category_list')
+//                                             ->content(function () {
+//                                                 $categories = Category::pluck('name');
 
-                                                if ($categories->isEmpty()) {
-                                                    return new HtmlString(
-                                                        '<p class="text-sm text-gray-500 dark:text-gray-400 text-center italic">No categories found.</p>'
-                                                    );
-                                                }
+            //                                                 if ($categories->isEmpty()) {
+//                                                     return new HtmlString(
+//                                                         '<p class="text-sm text-gray-500 dark:text-gray-400 text-center italic">No categories found.</p>'
+//                                                     );
+//                                                 }
 
-                                                $html = '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 max-h-64 overflow-y-auto">';
-                                                $html .= '<ul class="space-y-1 m-0 pl-4 text-center">';
+            //                                                 $html = '<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800 max-h-64 overflow-y-auto">';
+//                                                 $html .= '<ul class="space-y-1 m-0 pl-4 text-center">';
 
-                                                foreach ($categories as $category) {
-                                                    $escaped = e($category);
-                                                    $html .= <<<HTML
-<li class="text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0 pb-1 pt-1">{$escaped}</li>
-HTML;
-                                                }
+            //                                                 foreach ($categories as $category) {
+//                                                     $escaped = e($category);
+//                                                     $html .= <<<HTML
+// <li class="text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 last:border-b-0 pb-1 pt-1">{$escaped}</li>
+// HTML;
+//                                                 }
 
-                                                $html .= '</ul></div>';
+            //                                                 $html .= '</ul></div>';
 
-                                                return new HtmlString($html);
-                                            })
-                                            ->disableLabel(),
-                                    ])->compact(),
-                            ]),
+            //                                                 return new HtmlString($html);
+//                                             })
+//                                             ->disableLabel(),
+//                                     ])->compact(),
+//                             ]),
 
-                    ])
-                    ->action(function (array $data) {
-
-                        // dd($data);
-            
-                        Category::create([
-                            'name' => $data['category_name'],
-                        ]);
-
-                        Notification::make()
-                            ->success()
-                            ->title('Category Added')
-                            ->body('Category Added Successfully.')
-                            ->send();
-                    }),
-            ])
-                ->label('Add')
-                ->button()
-                ->icon(Heroicon::PlusCircle)
-                ->dropdownPlacement('left')
-                ->color('success'),
+            //                     ])
+//                     ->action(function (array $data) {
+//                         Category::create([
+//                             'name' => $data['category_name'],
+//                         ]);
+//                         Notification::make()
+//                             ->success()
+//                             ->title('Category Added')
+//                             ->body('Category Added Successfully.')
+//                             ->send();
+//                     }),
+            // ])
+            //     ->label('Add')
+            //     ->button()
+            //     ->icon(Heroicon::PlusCircle)
+            //     ->dropdownPlacement('left')
+            //     ->color('success'),
         ];
     }
 

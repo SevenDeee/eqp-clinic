@@ -26,19 +26,19 @@ class PatientFactory extends Factory
             'age' => $this->faker->numberBetween(18, 80),
             'sex' => $this->faker->randomElement(['Male', 'Female']),
 
-            'frame_type' => $this->faker->randomElement(['Metal', 'Plastic', 'Rimless', null]),
-            'color' => $this->faker->safeColorName(),
-            'lens_supply' => $this->faker->randomElement(['Single Vision', 'Bifocal', 'Progressive', null]),
+            // 'frame_type' => $this->faker->randomElement(['Metal', 'Plastic', 'Rimless', null]),
+            // 'color' => $this->faker->safeColorName(),
+            // 'lens_supply' => $this->faker->randomElement(['Single Vision', 'Bifocal', 'Progressive', null]),
             'diagnosis' => $this->faker->sentence(3),
 
             'special_instructions' => $this->faker->randomElement(['Wear full-time', 'Use for reading', null]),
             'follow_up_on' => $this->faker->optional()->dateTimeBetween('+1 week', '+6 months'),
 
-            'amount' => $this->faker->randomFloat(2, 500, 5000),
-            'deposit' => $this->faker->randomFloat(2, 100, 2500),
-            'balance' => fn(array $attributes) => $attributes['amount'] - $attributes['deposit'],
+            // 'amount' => $this->faker->randomFloat(2, 500, 5000),
+            // 'deposit' => $this->faker->randomFloat(2, 100, 2500),
+            // 'balance' => fn(array $attributes) => $attributes['amount'] - $attributes['deposit'],
 
-            'created_by' => 1, // Always assigned to user ID 1
+            'created_by' => $this->faker->randomElement([1, 2]), // Always assigned to user ID 1
             'archived_at' => null,
         ];
     }
