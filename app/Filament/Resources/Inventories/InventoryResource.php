@@ -13,9 +13,12 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class InventoryResource extends Resource
 {
+
+    protected static ?string $pluralModelLabel = 'Inventory';
     protected static ?string $model = Inventory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
@@ -45,4 +48,17 @@ class InventoryResource extends Resource
             // 'edit' => EditInventory::route('/{record}/edit'),
         ];
     }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     // dd(request()->all());
+    //     return parent::getEloquentQuery()
+    //         ->when(
+
+    //             // request()->has('filters.Archived.isActive') && 
+    //             !request()->has('filters.Archived.isActive') === true,
+    //             fn($q) =>
+    //             $q->whereNull('archived_at')
+    //         );
+    // }
+
 }
