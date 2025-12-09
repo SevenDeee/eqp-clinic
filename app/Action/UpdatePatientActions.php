@@ -3,6 +3,8 @@
 namespace App\Action;
 
 use App\Models\Inventory;
+use App\Models\InventoryOrder;
+use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
@@ -182,7 +184,11 @@ class UpdatePatientActions
                 $total += $costs[$id] ?? 0;
             }
 
+            $deposit = round($total / 2) ?? 0;
+
             $set('amount', $total);
+            $set('deposit', $deposit);
+            $set('balance', $total - $deposit);
         };
 
         function belowContent($cat_name, Get $get)
@@ -191,89 +197,142 @@ class UpdatePatientActions
             return $cost > 0 ? '₱' . number_format($cost) . '.00' : '';
         }
 
-        return self::saveAction(
-            Action::make('edit_optical')
-                ->label('Specifications & Billing')
-                ->modalHeading('Update Optical Specs & Billing Info')
-                ->modalWidth(Width::FiveExtraLarge)
-                ->icon('heroicon-s-eye')
-                ->form([
-                    Wizard::make([
-                        Step::make('Optical Specifications & Billing Information')
-                            ->icon('heroicon-s-eye')
-                            ->columns(3)
-                            ->schema([
-                                Section::make()
-                                    ->columnSpan(2)
-                                    ->schema([
-                                        Select::make('frame_type')
-                                            ->label('Frame Type')
-                                            ->options(
-                                                Inventory::whereHas('category', fn($q) => $q->where('name', 'Frame Type'))
-                                                    ->pluck('name', 'id')
-                                            )
-                                            ->belowContent(fn(Get $get) => belowContent('frame_type', $get))
-                                            ->live()
-                                            ->afterStateUpdated($updateAmount)
-                                            ->native(false),
+        return Action::make('edit_optical')
+            ->hidden(fn($record) => Order::where('patient_id', $record->id)->exists())
+            ->label('Specifications & Billing')
+            ->modalHeading('Update Optical Specs & Billing Info')
+            ->modalWidth(Width::FiveExtraLarge)
+            ->icon('heroicon-s-eye')
+            ->form([
+                Wizard::make([
+                    Step::make('Optical Specifications & Billing Information')
+                        ->icon('heroicon-s-eye')
+                        ->columns(3)
+                        ->schema([
+                            Section::make()
+                                ->columnSpan(2)
+                                ->schema([
+                                    Select::make('frame_type')
+                                        ->label('Frame Type')
+                                        ->options(
+                                            Inventory::whereHas('category', fn($q) => $q->where('name', 'Frame Type'))
+                                                ->pluck('name', 'id')
+                                        )
+                                        ->belowContent(fn(Get $get) => belowContent('frame_type', $get))
+                                        ->live()
+                                        ->afterStateUpdated($updateAmount)
+                                        ->native(false),
 
-                                        Select::make('color')
-                                            ->label('Frame Color')
-                                            ->options(
-                                                Inventory::whereHas('category', fn($q) => $q->where('name', 'Frame Color'))
-                                                    ->pluck('name', 'id')
-                                            )
-                                            ->belowContent(fn(Get $get) => belowContent('color', $get))
-                                            ->live()
-                                            ->afterStateUpdated($updateAmount)
-                                            ->native(false),
+                                    Select::make('color')
+                                        ->label('Frame Color')
+                                        ->options(
+                                            Inventory::whereHas('category', fn($q) => $q->where('name', 'Frame Color'))
+                                                ->pluck('name', 'id')
+                                        )
+                                        ->belowContent(fn(Get $get) => belowContent('color', $get))
+                                        ->live()
+                                        ->afterStateUpdated($updateAmount)
+                                        ->native(false),
 
-                                        Select::make('lens_supply')
-                                            ->label('Lens Supply')
-                                            ->options(
-                                                Inventory::whereHas('category', fn($q) => $q->where('name', 'Lens Supply'))
-                                                    ->pluck('name', 'id')
-                                            )
-                                            ->belowContent(fn(Get $get) => belowContent('lens_supply', $get))
-                                            ->live()
-                                            ->afterStateUpdated($updateAmount)
-                                            ->native(false),
-                                    ]),
+                                    Select::make('lens_supply')
+                                        ->label('Lens Supply')
+                                        ->options(
+                                            Inventory::whereHas('category', fn($q) => $q->where('name', 'Lens Supply'))
+                                                ->pluck('name', 'id')
+                                        )
+                                        ->belowContent(fn(Get $get) => belowContent('lens_supply', $get))
+                                        ->live()
+                                        ->afterStateUpdated($updateAmount)
+                                        ->native(false),
+                                ]),
 
-                                Section::make()
-                                    ->inlineLabel()
-                                    ->schema([
-                                        TextInput::make('amount')
-                                            ->hiddenLabel()
-                                            ->beforeLabel('Total Amount')
-                                            ->prefix('₱')
-                                            ->disabled()
-                                            ->live()
-                                            ->required(),
+                            Section::make()
+                                ->inlineLabel()
+                                ->schema([
+                                    TextInput::make('amount')
+                                        ->hiddenLabel()
+                                        ->beforeLabel('Total Amount')
+                                        ->prefix('₱')
+                                        ->disabled()
+                                        ->live()
+                                        ->dehydrated()
+                                        ->afterStateUpdated(function ($get, $set) {
+                                            return $set('deposit', $get('amount') / 2);
+                                        })
+                                        ->required(),
 
-                                        TextInput::make('deposit')
-                                            ->hiddenLabel()
-                                            ->beforeLabel('Deposit')
-                                            ->numeric()
-                                            ->prefix('₱')
-                                            ->required(),
+                                    TextInput::make('deposit')
+                                        ->hiddenLabel()
+                                        ->beforeLabel('Deposit')
+                                        ->numeric()
+                                        ->live()
+                                        ->afterStateUpdated(function ($get, $set) {
+                                            return $set('balance', $get('amount') - $get('deposit'));
+                                        })
+                                        ->prefix('₱')
+                                        ->required(),
 
-                                        TextInput::make('balance')
-                                            ->hiddenLabel()
-                                            ->beforeLabel('Balance')
-                                            ->numeric()
-                                            ->prefix('₱')
-                                            ->disabled()
-                                            ->dehydrated(false),
-                                    ])
+                                    TextInput::make('balance')
+                                        ->hiddenLabel()
+                                        ->beforeLabel('Balance')
+                                        ->numeric()
+                                        ->prefix('₱')
+                                        ->disabled()
+                                        ->dehydrated(),
+                                ])
 
-                            ]),
-                    ])->columnSpanFull()
-                        ->contained(false),
-                ]),
-            'Optical Specifications Updated',
-            'Patient optical specifications have been updated successfully.'
-        );
+                        ]),
+                ])->columnSpanFull()
+                    ->contained(false),
+            ])->modalSubmitActionLabel('Save Changes')
+            ->action(function (array $data, $record) {
+
+                // dd($data);
+    
+                $order = Order::create([
+                    'patient_id' => $record->id,
+                    'order_number' => 'EQP' . random_int(100000, 999999),
+                    'amount' => $data['amount'],
+                    'deposit' => $data['deposit'],
+                    'balance' => $data['balance'],
+                ]);
+
+                $frame = Inventory::where('id', $data['frame_type'])->select('cost_per_unit', 'name')->first();
+                $color = Inventory::where('id', $data['color'])->select('cost_per_unit', 'name')->first();
+                $lens = Inventory::where('id', $data['lens_supply'])->select('cost_per_unit', 'name')->first();
+
+                InventoryOrder::create([
+                    'inventory_id' => $data['frame_type'],
+                    'order_id' => $order->id,
+                    'name_on_purchase' => $frame->name,
+                    'price_on_purchase' => $frame->cost_per_unit,
+                ]);
+
+                InventoryOrder::create([
+                    'inventory_id' => $data['color'],
+                    'order_id' => $order->id,
+                    'name_on_purchase' => $color->name,
+                    'price_on_purchase' => $color->cost_per_unit,
+                ]);
+                InventoryOrder::create([
+                    'inventory_id' => $data['lens_supply'],
+                    'order_id' => $order->id,
+                    'name_on_purchase' => $lens->name,
+                    'price_on_purchase' => $lens->cost_per_unit,
+                ]);
+
+                Inventory::where('id', $data['frame_type'])->decrement('stock');
+                Inventory::where('id', $data['color'])->decrement('stock');
+                Inventory::where('id', $data['lens_supply'])->decrement('stock');
+
+
+                Notification::make()
+                    ->success()
+                    ->title('Optical Specifications Updated')
+                    ->body('Patient optical specifications have been updated successfully.')
+                    ->send();
+            });
+
     }
 
 

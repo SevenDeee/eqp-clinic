@@ -3,6 +3,9 @@
 namespace App\Filament\Resources\Patients\Schemas;
 
 use App\Filament\Resources\Patients\PatientResource;
+use App\Models\Inventory;
+use App\Models\InventoryOrder;
+use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\ColorEntry;
@@ -19,6 +22,8 @@ class PatientInfolist
 {
     public static function configure(Schema $schema): Schema
     {
+
+        // var_dump(Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', 1)->value('id'))->skip(1)->value('inventory_id'))->value('name'));
         return $schema
             ->columns(4)
             ->components([
@@ -107,22 +112,59 @@ class PatientInfolist
                     ->columnSpan(1)
                     ->schema([
                         Section::make()
-                            ->description('Optical Specifications')
+                            ->description(fn($record) => 'Optical Specifications' . Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', $record->id)->value('id'))->skip(1)->value('inventory_id'))->value('name'))
                             ->schema([
-                                self::textEntry('frame_type', 'Frame Type'),
-                                ColorEntry::make('color')->beforeContent(fn($record) => $record->color)
+                                TextEntry::make('frame_type')
+                                    ->size(TextSize::Large)
+                                    ->beforeLabel('Frame Type')
+                                    ->default(fn($record) => Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', $record->id)->value('id'))->value('inventory_id'))->value('name'))
+                                    ->hiddenLabel()
+                                    ->placeholder('N/A'),
+
+
+                                TextEntry::make('color')
+                                    ->beforeContent(fn($record) => Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', $record->id)->value('id'))->skip(1)->value('inventory_id'))->value('name'))
                                     ->beforeLabel('Color')
-                                    ->placeholder('N/A')
+                                    // ->placeholder('N/A')
                                     ->hiddenLabel(),
-                                self::textEntry('lens_supply', 'Lens Supply'),
+
+                                TextEntry::make('lens_supply')
+                                    ->size(TextSize::Large)
+                                    ->beforeLabel('Lens Supply')
+                                    ->default(fn($record) => Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', $record->id)->value('id'))->skip(2)->value('inventory_id'))->value('name'))
+                                    ->hiddenLabel()
+                                    ->placeholder('N/A'),
                             ]),
 
                         Section::make()
                             ->description('Billing Information')
                             ->schema([
-                                self::textEntry('amount', 'Amount')->money('php')->color('info'),
-                                self::textEntry('deposit', 'Deposit')->money('php')->color('success'),
-                                self::textEntry('balance', 'Balance')->money('php')->color('danger'),
+                                TextEntry::make('amount')
+                                    ->size(TextSize::Large)
+                                    ->beforeLabel('Amount')
+                                    ->default(fn($record) => Order::where('patient_id', $record->id)->value('amount'))
+                                    ->hiddenLabel()
+                                    ->money('php')
+                                    ->color('info')
+                                    ->placeholder('N/A'),
+
+                                TextEntry::make('deposit')
+                                    ->size(TextSize::Large)
+                                    ->beforeLabel('Deposit')
+                                    ->default(fn($record) => Order::where('patient_id', $record->id)->value('deposit'))
+                                    ->hiddenLabel()
+                                    ->money('php')
+                                    ->color('success')
+                                    ->placeholder('N/A'),
+
+                                TextEntry::make('balance')
+                                    ->size(TextSize::Large)
+                                    ->beforeLabel('Balance')
+                                    ->default(fn($record) => Order::where('patient_id', $record->id)->value('balance'))
+                                    ->hiddenLabel()
+                                    ->money('php')
+                                    ->color('danger')
+                                    ->placeholder('N/A'),
 
                                 Actions::make([
                                     Action::make('Return')
