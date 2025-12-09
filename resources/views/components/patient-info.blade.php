@@ -164,9 +164,7 @@
             </div>
         </header>
 
-        <section
-         style="margin-bottom: 0.5em;"
-        >
+        <section style="margin-bottom: 0.5em;">
             <h2>Patient Details</h2>
             <div class="columns">
                 <div class="col">
@@ -227,36 +225,32 @@
             </table>
         </section>
 
-        <section
-        {{-- style="margin-bottom: 8em;" --}}
-        >
+        <section {{-- style="margin-bottom: 8em;" --}}>
             <h2>Optical Specifications & Billing Information</h2>
             <div class="columns">
                 <div class="col">
-                    <p><span class="font-semibold">Frame Type:</span> {{ $patient->frame_type }}</p>
-                    <p><span class="font-semibold">Color:</span> {{ $patient->color }}</p>
+                    <p><span class="font-semibold">Frame Type:</span> {{ $specs['frame_type'] }}</p>
+                    <p><span class="font-semibold">Color:</span> {{ $specs['color'] }}</p>
                     <p><span class="font-semibold">Lens Supply:</span>
-                        {{ $patient->lens_suplly ? $patient->lens_suplly : 'N/A' }}</p>
+                        {{ $specs['lens'] ? $specs['lens'] : 'N/A' }}</p>
                     <p><span class="font-semibold">Lens Coatings:</span>
-                        {{ $patient->lens_suplly ? $patient->lens_suplly : 'N/A' }}</p>
+                        {{ $specs['lens'] ? $specs['lens'] : 'N/A' }}</p>
                 </div>
                 <div class="col">
-                    <p><span class="font-semibold">Amount:</span> P{{ number_format($patient->amount) }}</p>
-                    <p><span class="font-semibold">Deposit:</span> P{{ number_format($patient->deposit) }}</p>
-                    <p><span class="font-semibold">Balance:</span> P{{ number_format($patient->balance) }}</p>
+                    <p><span class="font-semibold">Amount:</span> P{{ number_format($bill['amount']) }}.00</p>
+                    <p><span class="font-semibold">Deposit:</span> P{{ number_format($bill['deposit']) }}.00</p>
+                    <p><span class="font-semibold">Balance:</span> P{{ number_format($bill['balance']) }}.00</p>
                     <p><span class="font-semibold"></span> .</p>
                 </div>
             </div>
         </section>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-        <section 
-        style="margin-bottom: -5em;"
-        >
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <section style="margin-bottom: -5em;">
             <h2>Clinical Assesment</h2>
             <p><span class="font-semibold">Special Instructions:</span> {{ $patient->special_instructions }}
             </p>
@@ -272,7 +266,8 @@
         </footer>
         <br>
         <br>
-        <p class="italic text-gray-500" style="padding-left: 10; padding-bottom: 10; text-align: right; font-size: 10; margin-bottom: -5em;">
+        <p class="italic text-gray-500"
+            style="padding-left: 10; padding-bottom: 10; text-align: right; font-size: 10; margin-bottom: -5em;">
             Issued At: {{ now()->format('F d, Y') }}</p>
     </div>
 </body>

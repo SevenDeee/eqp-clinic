@@ -112,7 +112,10 @@ class PatientInfolist
                     ->columnSpan(1)
                     ->schema([
                         Section::make()
-                            ->description(fn($record) => 'Optical Specifications' . Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', $record->id)->value('id'))->skip(1)->value('inventory_id'))->value('name'))
+                            ->description(
+                                fn($record) => 'Optical Specifications'
+                                // . Inventory::where('id', InventoryOrder::where('order_id', Order::where('patient_id', $record->id)->value('id'))->skip(1)->value('inventory_id'))->value('name')
+                            )
                             ->schema([
                                 TextEntry::make('frame_type')
                                     ->size(TextSize::Large)

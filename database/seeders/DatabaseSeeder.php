@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Patient;
 use App\Models\Prescription;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -51,5 +52,22 @@ class DatabaseSeeder extends Seeder
         Category::factory()->create([
             'name' => 'Lens Supply',
         ]);
+
+        Supplier::factory()->create([
+            'name' => 'Zaldy Mo',
+            'contact_number' => '9123456789',
+            'notes' => 'Frame Type',
+        ]);
+        Supplier::factory()->create([
+            'name' => 'Bentong Corp.',
+            'contact_number' => '9443456784',
+            'notes' => 'Frame Color',
+        ]);
+        Supplier::factory()->create([
+            'name' => 'DPWH',
+            'contact_number' => '9523456784',
+            'notes' => 'Lens Supply',
+        ]);
+
     }
 }

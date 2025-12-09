@@ -215,7 +215,7 @@ class UpdatePatientActions
                                     Select::make('frame_type')
                                         ->label('Frame Type')
                                         ->options(
-                                            Inventory::whereHas('category', fn($q) => $q->where('name', 'Frame Type'))
+                                            Inventory::where('stock', '!=', 0)->whereHas('category', fn($q) => $q->where('name', 'Frame Type'))
                                                 ->pluck('name', 'id')
                                         )
                                         ->belowContent(fn(Get $get) => belowContent('frame_type', $get))
@@ -226,7 +226,7 @@ class UpdatePatientActions
                                     Select::make('color')
                                         ->label('Frame Color')
                                         ->options(
-                                            Inventory::whereHas('category', fn($q) => $q->where('name', 'Frame Color'))
+                                            Inventory::where('stock', '!=', 0)->whereHas('category', fn($q) => $q->where('name', 'Frame Color'))
                                                 ->pluck('name', 'id')
                                         )
                                         ->belowContent(fn(Get $get) => belowContent('color', $get))
@@ -237,7 +237,7 @@ class UpdatePatientActions
                                     Select::make('lens_supply')
                                         ->label('Lens Supply')
                                         ->options(
-                                            Inventory::whereHas('category', fn($q) => $q->where('name', 'Lens Supply'))
+                                            Inventory::where('stock', '!=', 0)->whereHas('category', fn($q) => $q->where('name', 'Lens Supply'))
                                                 ->pluck('name', 'id')
                                         )
                                         ->belowContent(fn(Get $get) => belowContent('lens_supply', $get))
